@@ -60,7 +60,6 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }) {
-  console.log(params);
   const { data } = await client.query({
     query: GET_ITEM,
     variables: { itemId: params.id },

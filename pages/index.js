@@ -1,4 +1,4 @@
-import { gql } from "@apollo/client";
+import { useQuery, gql } from "@apollo/client";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,7 +16,14 @@ const GET_ITEMS = gql`
   }
 `;
 
-export default function Home({ items }) {
+export default function Home() {
+  const { error, loading, data } = useQuery(GET_ITEMS);
+
+  if (error) return <div>Error :( {error.message}</div>;
+  if (loading) return <div>Loading...</div>;
+
+  const { items } = data;
+
   return (
     <div className={styles.container}>
       <Head>
@@ -57,13 +64,13 @@ export default function Home({ items }) {
   );
 }
 
-export async function getStaticProps() {
-  const { data } = await client.query({ query: GET_ITEMS });
+// export async function getStaticProps() {
+//   const { data } = await client.query({ query: GET_ITEMS });
 
-  return {
-    props: {
-      items: data.items,
-      revalidate: 1,
-    },
-  };
-}
+//   return {
+//     props: {
+//       items: data.items,
+//       revalidate: 1,
+//     },
+//   };
+// }
