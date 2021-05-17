@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery, gql } from "@apollo/client";
 import Head from "next/head";
 import Image from "next/image";
@@ -16,14 +17,36 @@ const GET_ITEMS = gql`
   }
 `;
 
-export default function Home() {
+const ItemList = () => {
+  const [hasMounted, setHasMounted] = useState(false);
   const { error, loading, data } = useQuery(GET_ITEMS);
 
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
   if (error) return <div>Error :( {error.message}</div>;
   if (loading) return <div>Loading...</div>;
 
   const { items } = data;
 
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>
+          <Link href={`/item/${item.id}`}>
+            <a>
+              {item.title} <em>({item.url})</em>
+            </a>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
+export default function Home() {
   return (
     <div className={styles.container}>
       <Head>
@@ -34,18 +57,7 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Next + GraphQL w/ Apollo</h1>
-
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link href={`/item/${item.id}`}>
-                <a>
-                  {item.title} <em>({item.url})</em>
-                </a>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <ItemList />
       </main>
 
       <footer className={styles.footer}>
