@@ -17,15 +17,21 @@ const GET_ITEMS = gql`
   }
 `;
 
-const ItemList = () => {
+const ClientOnly = ({ children, ...delegated }) => {
   const [hasMounted, setHasMounted] = useState(false);
-  const { error, loading, data } = useQuery(GET_ITEMS);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
 
   if (!hasMounted) return null;
+
+  return <div {...delegated}>{children}</div>;
+};
+
+const ItemList = () => {
+  const { error, loading, data } = useQuery(GET_ITEMS);
+
   if (error) return <div>Error :( {error.message}</div>;
   if (loading) return <div>Loading...</div>;
 
@@ -57,7 +63,9 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>Next + GraphQL w/ Apollo</h1>
-        <ItemList />
+        <ClientOnly>
+          <ItemList />
+        </ClientOnly>
       </main>
 
       <footer className={styles.footer}>
