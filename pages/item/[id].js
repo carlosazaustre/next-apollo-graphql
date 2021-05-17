@@ -1,14 +1,12 @@
 import { gql } from "@apollo/client";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
-import styles from "../styles/Home.module.css";
+import client from "../../client";
+import styles from "../../styles/Home.module.css";
 
-import client from "../client";
-
-const GET_ITEMS = gql`
-  query {
-    items {
+const GET_ITEM = gql`
+  query GetItem($itemId: String!) {
+    item(id: $itemId) {
       id
       title
       url
@@ -16,7 +14,15 @@ const GET_ITEMS = gql`
   }
 `;
 
-export default function Home({ items }) {
+const GET_ITEMS_ID = gql`
+  query {
+    items {
+      id
+    }
+  }
+`;
+
+export default function ItemPage({ item }) {
   return (
     <div className={styles.container}>
       <Head>
@@ -26,19 +32,8 @@ export default function Home({ items }) {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>Next + GraphQL w/ Apollo</h1>
-
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link href={`/item/${item.id}`}>
-                <a>
-                  {item.title} <em>({item.url})</em>
-                </a>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <h1 className={styles.title}>{item.title}</h1>
+        <h3>{item.url}</h3>
       </main>
 
       <footer className={styles.footer}>
@@ -57,13 +52,21 @@ export default function Home({ items }) {
   );
 }
 
-export async function getStaticProps() {
-  const { data } = await client.query({ query: GET_ITEMS });
+export async function getStaticPaths() {
+  const { data } = await client.query({ query: GET_ITEMS_ID });
+  const paths = data.items.map((item) => ({ params: { id: item.id } }));
+
+  return { paths, fallback: false };
+}
+
+export async function getStaticProps({ params }) {
+  console.log(params);
+  const { data } = await client.query({
+    query: GET_ITEM,
+    variables: { itemId: params.id },
+  });
 
   return {
-    props: {
-      items: data.items,
-      revalidate: 1,
-    },
+    props: { item: data.item },
   };
 }
